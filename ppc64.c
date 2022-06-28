@@ -3153,6 +3153,44 @@ opalmsg(void)
 		fprintf(fp, "\n");
 }
 
+static void ppc64_print_emergency_stack_info(void)
+{
+	struct machine_specific *ms = machdep->machspec;
+	char buf[32];
+	int i;
+
+	fprintf(fp, "    EMERGENCY STACK: ");
+	if (ms->emergency_sp) {
+		fprintf(fp, "\n");
+		for (i = 0; i < kt->cpus; i++) {
+			sprintf(buf, "CPU %d", i);
+			fprintf(fp, "%19s: %lx\n", buf, ms->emergency_sp[i]);
+		}
+	} else
+		fprintf(fp, "(unused)\n");
+
+	fprintf(fp, "NMI EMERGENCY STACK: ");
+	if (ms->nmi_emergency_sp) {
+		fprintf(fp, "\n");
+		for (i = 0; i < kt->cpus; i++) {
+			sprintf(buf, "CPU %d", i);
+			fprintf(fp, "%19s: %lx\n", buf, ms->nmi_emergency_sp[i]);
+		}
+	} else
+		fprintf(fp, "(unused)\n");
+
+	fprintf(fp, " MC EMERGENCY STACK: ");
+	if (ms->mc_emergency_sp) {
+		fprintf(fp, "\n");
+		for (i = 0; i < kt->cpus; i++) {
+			sprintf(buf, "CPU %d", i);
+			fprintf(fp, "%19s: %lx\n", buf, ms->mc_emergency_sp[i]);
+		}
+	} else
+		fprintf(fp, "(unused)\n");
+	fprintf(fp, "\n");
+}
+
 /*
  *  Machine dependent command.
  */
@@ -3161,7 +3199,7 @@ ppc64_cmd_mach(void)
 {
         int c;
 
-	while ((c = getopt(argcnt, args, "cmo")) != EOF) {
+	while ((c = getopt(argcnt, args, "cmoe")) != EOF) {
                 switch(c)
                 {
 		case 'c':
@@ -3171,6 +3209,9 @@ ppc64_cmd_mach(void)
 			break;
 		case 'o':
 			return opalmsg();
+		case 'e':
+			ppc64_print_emergency_stack_info();
+			break;
                 default:
                         argerrs++;
                         break;
